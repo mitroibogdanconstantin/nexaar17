@@ -33,31 +33,14 @@ function ScrollToTop() {
 	return null;
 }
 
-// Hook care detectează când utilizatorul revine în tab și reîncarcă pagina
+// Acest hook a fost dezactivat pentru a evita reîncărcarea paginii la schimbarea taburilor
 function useAppVisibility() {
-	useEffect(() => {
-		const handleVisibilityChange = () => {
-			if (document.visibilityState === "visible") {
-				window.location.reload();
-			}
-		};
-
-		const handleFocus = () => {
-			window.location.reload();
-		};
-
-		document.addEventListener("visibilitychange", handleVisibilityChange);
-		window.addEventListener("focus", handleFocus);
-
-		return () => {
-			document.removeEventListener("visibilitychange", handleVisibilityChange);
-			window.removeEventListener("focus", handleFocus);
-		};
-	}, []);
+	// Funcția este acum goală - nu mai face nimic
+	// Am păstrat-o pentru compatibilitate cu codul existent
 }
 
 function App() {
-	useAppVisibility(); // activează logica de reload
+	useAppVisibility(); // Acest hook nu mai face nimic, dar îl păstrăm pentru compatibilitate
 
 	return (
 		<Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
