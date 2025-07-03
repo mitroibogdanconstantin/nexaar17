@@ -33,49 +33,22 @@ function ScrollToTop() {
 	return null;
 }
 
-// Hook care detectează când utilizatorul revine în tab și reîncarcă datele
+// Hook care forțează reîncărcarea paginii când utilizatorul revine în tab
 function useAppVisibility() {
 	useEffect(() => {
-		// Variabilă pentru a ține evidența timpului petrecut în afara tabului
-		let tabInactiveTime = 0;
-		let tabSwitchTime = 0;
-		
 		const handleVisibilityChange = () => {
-			if (document.visibilityState === "hidden") {
-				// Salvăm momentul când utilizatorul a părăsit tabul
-				tabSwitchTime = Date.now();
-			} else if (document.visibilityState === "visible") {
-				// Calculăm cât timp a fost utilizatorul plecat
-				if (tabSwitchTime > 0) {
-					tabInactiveTime = Date.now() - tabSwitchTime;
-					
-					// Reîncărcăm pagina doar dacă utilizatorul a fost plecat mai mult de 5 minute
-					// Acest lucru evită reîncărcările frecvente pentru schimbări rapide între taburi
-					if (tabInactiveTime > 5 * 60 * 1000) {
-						console.log("Reîncărcare pagină după inactivitate de peste 5 minute");
-						window.location.reload();
-					}
-				}
+			if (document.visibilityState === "visible") {
+				// Reîncărcăm pagina imediat când utilizatorul revine în tab
+				window.location.reload();
 			}
 		};
 
-		const handleFocus = () => {
-			// Verificăm dacă a trecut suficient timp de la ultima activitate
-			if (tabSwitchTime > 0) {
-				const inactiveTime = Date.now() - tabSwitchTime;
-				if (inactiveTime > 5 * 60 * 1000) {
-					console.log("Reîncărcare pagină după inactivitate de peste 5 minute");
-					window.location.reload();
-				}
-			}
-		};
-
+		// Adăugăm event listener pentru schimbarea vizibilității documentului
 		document.addEventListener("visibilitychange", handleVisibilityChange);
-		window.addEventListener("focus", handleFocus);
 
+		// Curățăm event listener-ul la unmount
 		return () => {
 			document.removeEventListener("visibilitychange", handleVisibilityChange);
-			window.removeEventListener("focus", handleFocus);
 		};
 	}, []);
 }
