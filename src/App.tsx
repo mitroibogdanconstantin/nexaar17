@@ -33,14 +33,55 @@ function ScrollToTop() {
 	return null;
 }
 
-// Acest hook a fost dezactivat pentru a evita reîncărcarea paginii la schimbarea taburilor
+// Hook care detectează când utilizatorul revine în tab și reîncarcă datele
 function useAppVisibility() {
-	// Funcția este acum goală - nu mai face nimic
-	// Am păstrat-o pentru compatibilitate cu codul existent
+	useEffect(() => {
+		// Variabilă pentru a ține evidența timpului petrecut în afara tabului
+		let tabInactiveTime = 0;
+		let tabSwitchTime = 0;
+		
+		const handleVisibilityChange = () => {
+			if (document.visibilityState === "hidden") {
+				// Salvăm momentul când utilizatorul a părăsit tabul
+				tabSwitchTime = Date.now();
+			} else if (document.visibilityState === "visible") {
+				// Calculăm cât timp a fost utilizatorul plecat
+				if (tabSwitchTime > 0) {
+					tabInactiveTime = Date.now() - tabSwitchTime;
+					
+					// Reîncărcăm pagina doar dacă utilizatorul a fost plecat mai mult de 5 minute
+					// Acest lucru evită reîncărcările frecvente pentru schimbări rapide între taburi
+					if (tabInactiveTime > 5 * 60 * 1000) {
+						console.log("Reîncărcare pagină după inactivitate de peste 5 minute");
+						window.location.reload();
+					}
+				}
+			}
+		};
+
+		const handleFocus = () => {
+			// Verificăm dacă a trecut suficient timp de la ultima activitate
+			if (tabSwitchTime > 0) {
+				const inactiveTime = Date.now() - tabSwitchTime;
+				if (inactiveTime > 5 * 60 * 1000) {
+					console.log("Reîncărcare pagină după inactivitate de peste 5 minute");
+					window.location.reload();
+				}
+			}
+		};
+
+		document.addEventListener("visibilitychange", handleVisibilityChange);
+		window.addEventListener("focus", handleFocus);
+
+		return () => {
+			document.removeEventListener("visibilitychange", handleVisibilityChange);
+			window.removeEventListener("focus", handleFocus);
+		};
+	}, []);
 }
 
 function App() {
-	useAppVisibility(); // Acest hook nu mai face nimic, dar îl păstrăm pentru compatibilitate
+	useAppVisibility(); // activează logica de reload
 
 	return (
 		<Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
